@@ -1,6 +1,5 @@
 from pytircy import Compiler
-import click
-import ast
+import click, ast
 
 @click.option('--output', '-o', type=click.File('w'), default=None)
 @click.argument('source', type=click.File('r'))
