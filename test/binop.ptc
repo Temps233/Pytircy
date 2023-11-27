@@ -1,0 +1,4 @@
+import stdio.h
+
+def main() -> int:
+    printf("%d", 2 + 3 * 4)

@@ -1,0 +1,5 @@
+import stdio.h
+
+def main() -> int:
+    a: int = 114 % 100
+    printf("%d", a)
