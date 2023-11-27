@@ -27,7 +27,6 @@ from ast import (
     LtE,
     Lt,
 )
-import ast
 
 class CompTimeCtx:
     def __init__(self):
