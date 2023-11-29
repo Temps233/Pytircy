@@ -41,7 +41,8 @@ class Compiler(NodeVisitor):
         if (isinstance(node, list)):
             ret = ""
             for n in node:
-                ret += (x := self.visit(n)) + (';\n' if x[-1] != '}' else '\n')
+                x = self.visit(n)
+                ret += (x if x[-1] != '$' else x[:-1]) + ('\n' if x[-1] in ('$', '}') else ';\n')
             return ret
         raise NotImplementedError(type(node).__name__)
 
@@ -156,4 +157,4 @@ class Compiler(NodeVisitor):
             raise SyntaxError("multi-import is not supported")
         if node.names[0].asname:
             raise SyntaxError("import as is not supported")
-        return f'#include <{node.names[0].name}>'
+        return f'#include <{node.names[0].name}>$'
