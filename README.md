@@ -3,3 +3,12 @@
 [![COMMIT](https://img.shields.io/github/last-commit/Temps233/Pytircy)](https://github.com/Temps233/Pytircy/commits/master)
 
 a compiler which converts a subset of Python to C/C++.
+
+## 📖 Supported Python Features
+- Int, Float, Character, String, Boolean Constants
+- Bin-Op
+- Variables
+- Arrays
+- Comparisons
+- If-Else
+- Functions

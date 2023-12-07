@@ -1,0 +1,10 @@
+import cstdio
+import string
+"$cpp using namespace std"
+
+def main() -> int:
+    a: int = 10
+    b: double = 1.1
+    c: char = u'c'
+    d: string = "string"
+    c[3]: int = [1, 2, 3]

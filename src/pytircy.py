@@ -26,6 +26,8 @@ from ast import (
     Gt,
     LtE,
     Lt,
+    List,
+    Subscript
 )
 
 class CompTimeCtx:
@@ -42,7 +44,7 @@ class Compiler(NodeVisitor):
             ret = ""
             for n in node:
                 x = self.visit(n)
-                ret += (x if x[-1] != '$' else x[:-1]) + ('\n' if x[-1] in ('$', '}') else ';\n')
+                ret += (x if x[-1] != '$' else x[:-1]) + ('\n' if x[-1] == '$' else ';\n')
             return ret
         raise NotImplementedError(type(node).__name__)
 
@@ -58,6 +60,8 @@ class Compiler(NodeVisitor):
                 if len(node.value) > 1:
                     raise ValueError("multi-char in char type")
                 return f"'{node.value}'"
+            if node.value.startswith("$cpp "):
+                return node.value[5:]
             return f'"{node.value}"'
         
         elif type(node.value) == int:
@@ -95,8 +99,10 @@ class Compiler(NodeVisitor):
         return node.id
     
     def visit_AnnAssign(self, node: AnnAssign):
-        if not type(node.annotation) == Name:
+        if type(node.annotation) != Name:
             raise TypeError("invalid type")
+        if type(node.target) not in (Name, Subscript):
+            raise SyntaxError("invalid target")
         result = f"{self.visit(node.annotation)} {self.visit(node.target)}"
         self.ctx.names.append(result.split()[1])
         if node.value is not None:
@@ -118,7 +124,7 @@ class Compiler(NodeVisitor):
     
     def visit_If(self, node: If):
         if_clause = f"if ({self.visit(node.test)}) {{\n{self.visit(node.body)}}} "
-        else_clause = f"else {{\n{self.visit(node.orelse)}}}"
+        else_clause = f"else {{\n{self.visit(node.orelse)}}}$"
         return if_clause + else_clause
     
     def visit_Compare(self, node: Compare):
@@ -147,7 +153,7 @@ class Compiler(NodeVisitor):
         if not isinstance(node.returns, Name):
             raise TypeError("invalid return type")
         func_head = f"{self.visit(node.returns)} {node.name}({', '.join(map(lambda x: f'{self.visit(x.annotation)} {x.arg}', node.args.args))})"
-        return func_head + f" {{\n{self.visit(node.body)}}}"
+        return func_head + f" {{\n{self.visit(node.body)}}}$"
     
     def visit_Return(self, node: Return):
         return f'return {self.visit(node.value)}'
@@ -158,3 +164,11 @@ class Compiler(NodeVisitor):
         if node.names[0].asname:
             raise SyntaxError("import as is not supported")
         return f'#include <{node.names[0].name}>$'
+
+    def visit_List(self, node: List):
+        return f'{{{", ".join(map(lambda x: self.visit(x), node.elts))}}}'
+
+    def visit_Subscript(self, node: Subscript):
+        if not isinstance(node.slice, Constant) or not isinstance(node.slice.value, int):
+            raise TypeError("Subscript can only contain integers")
+        return f'{self.visit(node.value)}[{self.visit(node.slice)}]'
